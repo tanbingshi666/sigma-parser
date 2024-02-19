@@ -35,15 +35,9 @@ public class SigmaRuleCheckUtils {
     }
 
     private boolean checkCondition(SigmaRule sigmaRule, JsonNode data) {
-
         List<Condition> conditions = sigmaRule.getConditionManager().getConditions();
-        for (Condition condition : conditions) {
-            if (checkCondition(condition, sigmaRule.getDetectionManager(), data)) {
-                return true;
-            }
-        }
-
-        return false;
+        // condition 从左开始遍历 故取左边第一个
+        return checkCondition(conditions.get(0), sigmaRule.getDetectionManager(), data);
     }
 
     private boolean checkCondition(Condition condition, DetectionManager detectionManager, JsonNode data) {

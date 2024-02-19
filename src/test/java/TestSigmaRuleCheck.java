@@ -14,8 +14,8 @@ public class TestSigmaRuleCheck {
         SigmaRuleParser ruleParser = new SigmaRuleParser();
 
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains.yml";
-        // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_2.yml";
-        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_3.yml";
+        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_2.yml";
+        //String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_3.yml";
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_4.yml";
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_5.yml";
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_6.yml";
@@ -24,7 +24,7 @@ public class TestSigmaRuleCheck {
 
         SigmaRule sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
 
-        String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan1\"}";
+        String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan\"}";
         //String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
 
         ObjectMapper mapper = new ObjectMapper();
