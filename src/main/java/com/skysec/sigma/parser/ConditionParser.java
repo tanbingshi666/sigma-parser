@@ -25,8 +25,9 @@ public class ConditionParser {
     public static final String IN_ONE = "1 of ";
     public static final String IN_ALL = "all of ";
 
-    // 临时字符串
+    // 临时变量
     private String temp = "";
+    private String notCondition;
     private Condition currentCondition;
 
     /**
@@ -56,8 +57,8 @@ public class ConditionParser {
             while (it.current() != CharacterIterator.DONE) {
                 String currentChar = Character.toString(it.current());
                 if (SPACE.equals(currentChar)) {
-                    // 匹配 detection 或者是操作符 (and, or, 等) 情况下
-                    if (sigmaDetections.containsKey(temp) || AND.equals(temp) || OR.equals(temp)) {
+                    // 匹配 detection 或者是操作符 (and, or) 或者否定 (not) 情况下
+                    if (sigmaDetections.containsKey(temp) || AND.equals(temp) || OR.equals(temp) || NOT.equals(temp)) {
                         evaluateString(conditionManager, temp);
                         temp = "";
                     } else {
@@ -80,7 +81,6 @@ public class ConditionParser {
             if (!StringUtils.isEmpty(temp)) {
                 evaluateString(conditionManager, temp);
             }
-
         }
 
         return conditionManager;
@@ -92,15 +92,19 @@ public class ConditionParser {
             case OR:
                 currentCondition.setOperator(eval);
                 break;
+            case NOT:
+                notCondition = NOT;
+                break;
             default:
                 if (currentCondition == null) {
-                    currentCondition = new Condition(eval);
+                    currentCondition = new Condition(eval, notCondition);
                     conditionManager.addCondition(currentCondition);
                 } else {
-                    Condition newCondition = new Condition(eval);
+                    Condition newCondition = new Condition(eval, notCondition);
                     currentCondition.setPairCondition(newCondition);
                     currentCondition = newCondition;
                 }
+                notCondition = null;
                 break;
         }
 

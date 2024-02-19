@@ -24,11 +24,14 @@ public class TestSigmaRuleCheck {
 
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_9.yml";
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_10.yml";
-        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_11.yml";
+        // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_11.yml";
+
+        // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_12.yml";
+        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_13.yml";
 
         SigmaRule sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
 
-        String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan\",\"other\": \"DNS11\"}";
+        String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan\",\"other\": \"DNS\"}";
         //String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
 
         ObjectMapper mapper = new ObjectMapper();

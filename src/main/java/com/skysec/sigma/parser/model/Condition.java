@@ -11,8 +11,11 @@ public class Condition {
 
     private Condition pairCondition;
 
-    public Condition(String name) {
+    private String notCondition;
+
+    public Condition(String name, String notCondition) {
         this.name = name;
+        this.notCondition = notCondition;
     }
 
 }

@@ -60,15 +60,19 @@ public class SigmaRuleCheckUtils {
         return checkParentCondition(condition, detectionManager, data);
     }
 
+    /**
+     * 检测 condition 语句中单个 detectionName
+     */
     private boolean checkParentCondition(Condition condition, DetectionManager detectionManager, JsonNode data) {
 
         int validDetectionCount = 0;
+        boolean isCheckMatch = false;
 
         // 直接匹配到 detectionName 情况下
         SigmaDetection sigmaDetection = detectionManager.getSigmaDetectionByName(condition.getName());
         if (sigmaDetection != null) {
             validDetectionCount = getValidDetectionCount(condition, data, validDetectionCount, sigmaDetection);
-            return validDetectionCount == sigmaDetection.getDetections().size();
+            isCheckMatch = validDetectionCount == sigmaDetection.getDetections().size();
         } else if (condition.getName().startsWith(ConditionParser.IN_ONE)) {
             // 1 of selection* 情况下
 
@@ -77,7 +81,7 @@ public class SigmaRuleCheckUtils {
             for (Map.Entry<String, SigmaDetection> entry : regexNameSigmaDetections.entrySet()) {
                 validDetectionCount = getValidDetectionCount(condition, data, validDetectionCount, entry.getValue());
             }
-            return validDetectionCount > 0;
+            isCheckMatch = validDetectionCount > 0;
         } else if (condition.getName().startsWith(ConditionParser.IN_ALL)) {
             // all of selection* 情况下
 
@@ -86,12 +90,18 @@ public class SigmaRuleCheckUtils {
             for (Map.Entry<String, SigmaDetection> entry : regexNameSigmaDetections.entrySet()) {
                 validDetectionCount = getValidDetectionCount(condition, data, validDetectionCount, entry.getValue());
             }
-            return validDetectionCount == regexNameSigmaDetections.size();
+            isCheckMatch = validDetectionCount == regexNameSigmaDetections.size();
         } else {
             console.info("condition 中 name 在 detection 找不到对应的信息...");
             return false;
         }
 
+        // 如果 condition 存在 not 则取反即可
+        if (ConditionParser.NOT.equals(condition.getNotCondition())) {
+            isCheckMatch = !isCheckMatch;
+        }
+
+        return isCheckMatch;
     }
 
     /**
