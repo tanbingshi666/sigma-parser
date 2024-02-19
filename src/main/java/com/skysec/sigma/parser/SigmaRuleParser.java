@@ -44,7 +44,9 @@ public class SigmaRuleParser {
         sigmaRule.setDetectionManager(detectionParser.parseDetections(sigmaRuleYaml));
 
         // 解析 condition
-        sigmaRule.setConditionManager(conditionParser.parseCondition(sigmaRuleYaml));
+        sigmaRule.setConditionManager(conditionParser.parseCondition(
+                sigmaRule.getDetectionManager().getSigmaDetections(),
+                sigmaRuleYaml));
 
         return sigmaRule;
     }
