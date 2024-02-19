@@ -15,9 +15,9 @@ public class ConditionParser {
 
     public static final String OPEN_PAREN = "(";
     public static final String CLOSE_PAREN = ")";
-    public static final String NOT = "NOT"; // ignore case
-    public static final String AND = "AND"; // ignore case
-    public static final String OR = "OR"; // ignore case
+    public static final String NOT = "not";
+    public static final String AND = "and";
+    public static final String OR = "or";
     public static final String SPACE = " ";
 
     // 临时字符串

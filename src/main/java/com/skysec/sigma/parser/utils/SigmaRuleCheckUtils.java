@@ -3,6 +3,7 @@ package com.skysec.sigma.parser.utils;
 import cn.hutool.log.Log;
 import cn.hutool.log.dialect.console.ConsoleLog;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.skysec.sigma.parser.ConditionParser;
 import com.skysec.sigma.parser.DetectionManager;
 import com.skysec.sigma.parser.model.Condition;
 import com.skysec.sigma.parser.model.Detection;
@@ -49,16 +50,16 @@ public class SigmaRuleCheckUtils {
 
         boolean pairConditionResult;
 
-        // condition 存在 AND OR 等语句情况下
+        // condition 存在 and or 等语句情况下
         if (condition.getPairCondition() != null) {
             pairConditionResult = checkCondition(condition.getPairCondition(), detectionManager, data);
 
-            // 如果 pairConditionResult 检测为 true 并且父 condition 的操作符为 OR 则不需要检测父 condition 直接返回 true
-            if (pairConditionResult && "OR".equals(condition.getOperator())) {
+            // 如果 pairConditionResult 检测为 true 并且父 condition 的操作符为 or 则不需要检测父 condition 直接返回 true
+            if (pairConditionResult && ConditionParser.OR.equals(condition.getOperator())) {
                 return true;
-            } else if ("OR".equals(condition.getOperator())) {
+            } else if (ConditionParser.OR.equals(condition.getOperator())) {
                 return checkParentCondition(condition, detectionManager, data);
-            } else { // AND
+            } else { // and
                 return pairConditionResult && checkParentCondition(condition, detectionManager, data);
             }
         }

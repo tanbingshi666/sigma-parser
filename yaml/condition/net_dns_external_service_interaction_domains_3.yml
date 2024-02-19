@@ -30,7 +30,7 @@ detection:
       - '.dnslog.cn'
   selection2:
     select: 'tan'
-  condition: selection1 OR selection2
+  condition: selection1 or selection2
 falsepositives:
   - Unknown
 level: high
