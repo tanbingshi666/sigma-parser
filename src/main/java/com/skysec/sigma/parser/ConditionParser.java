@@ -15,8 +15,8 @@ public class ConditionParser {
 
     private final Log console = new ConsoleLog(ConditionParser.class);
 
-    public static final String OPEN_PAREN = "(";
-    public static final String CLOSE_PAREN = ")";
+    public static final String OPEN = "(";
+    public static final String CLOSE = ")";
     public static final String NOT = "not";
     public static final String AND = "and";
     public static final String OR = "or";
@@ -45,7 +45,7 @@ public class ConditionParser {
         if (!StringUtils.isEmpty(condition)) {
             CharacterIterator it = new StringCharacterIterator(condition.trim());
 
-            // todo 目前只考虑 AND, OR, 1 of selection*, all of selection* 情况
+            // todo 目前只考虑 AND, OR, 1 of selection*, all of selection*, not, () 情况
             /**
              * 情况一: condition: selection
              * 情况二: condition: selection1 and selection2
@@ -53,6 +53,11 @@ public class ConditionParser {
              *
              * 情况四: 1 of selection*
              * 情况五: all of selection* and select
+             *
+             * 情况六: condition: not selection
+             * 情况七: condition: other and not 1 of selection*
+             *
+             * 情况八: condition: selection1 and (keywords1 or keywords2)
              */
             while (it.current() != CharacterIterator.DONE) {
                 String currentChar = Character.toString(it.current());
@@ -70,6 +75,10 @@ public class ConditionParser {
                             temp = temp.concat(currentChar);
                         }
                     }
+                } else if (OPEN.equals(currentChar)) {
+                    // nothing to do
+                } else if (CLOSE.equals(currentChar)) {
+                    // nothing to do
                 } else {
                     temp = temp.concat(currentChar);
                 }

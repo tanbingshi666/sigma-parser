@@ -17,9 +17,9 @@ import java.util.Map;
 /**
  * sigma rule 检测工具
  */
-public class SigmaRuleCheckUtils {
+public class SigmaRuleUtils {
 
-    private final Log console = new ConsoleLog(SigmaRuleCheckUtils.class);
+    private final Log console = new ConsoleLog(SigmaRuleUtils.class);
 
     /**
      * 检测 sigma rule
