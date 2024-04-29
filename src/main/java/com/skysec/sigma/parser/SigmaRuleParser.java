@@ -2,7 +2,6 @@ package com.skysec.sigma.parser;
 
 import cn.hutool.log.Log;
 import cn.hutool.log.dialect.console.ConsoleLog;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.skysec.sigma.parser.model.SigmaRule;
@@ -28,7 +27,7 @@ public class SigmaRuleParser {
     /**
      * 解析 yaml 文件
      */
-    public SigmaRule parseRule(String rule) throws JsonProcessingException {
+    public SigmaRule parseRule(String rule) throws Exception {
         SigmaRuleYaml sigmaRuleYaml = yamlMapper.readValue(rule, SigmaRuleYaml.class);
         return parseRule(sigmaRuleYaml);
     }
@@ -36,7 +35,7 @@ public class SigmaRuleParser {
     /**
      * 解析 sigma rule (核心解析 detection 和 condition)
      */
-    public SigmaRule parseRule(SigmaRuleYaml sigmaRuleYaml) {
+    public SigmaRule parseRule(SigmaRuleYaml sigmaRuleYaml) throws Exception {
         SigmaRule sigmaRule = new SigmaRule();
         sigmaRule.copySigmaRuleProperties(sigmaRuleYaml);
 

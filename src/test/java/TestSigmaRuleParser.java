@@ -1,4 +1,6 @@
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.skysec.sigma.parser.SigmaRuleParser;
+import com.skysec.sigma.parser.exception.DetectionErrorException;
 import com.skysec.sigma.parser.model.SigmaRule;
 
 import java.io.IOException;
@@ -29,9 +31,23 @@ public class TestSigmaRuleParser {
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\net_dns_external_service_interaction_domains_9.yml";
 
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\net_dns_external_service_interaction_domains_10.yml";
-        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\net_dns_external_service_interaction_domains_11.yml";
+        // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\net_dns_external_service_interaction_domains_11.yml";
 
-        SigmaRule sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
+        // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\dev\\win_av_relevant_match.yml";
+        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\dev\\win_av_relevant_match2.yml";
+
+        SigmaRule sigmaRule = null;
+        try {
+            sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
+        } catch (DetectionErrorException e1) {
+            System.out.println("解析 detection 出错, 请检查是否编写正确...");
+            e1.printStackTrace();
+        } catch (JsonProcessingException e2) {
+            e2.printStackTrace();
+            System.out.println("解析规则文件出错, 请检查是否编写正确...");
+        } catch (Exception e3) {
+            e3.printStackTrace();
+        }
         System.out.println(sigmaRule);
 
     }

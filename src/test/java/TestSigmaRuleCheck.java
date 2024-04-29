@@ -32,7 +32,12 @@ public class TestSigmaRuleCheck {
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_14.yml";
         String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_15.yml";
 
-        SigmaRule sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
+        SigmaRule sigmaRule = null;
+        try {
+            sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan11\",\"other\": \"DNS\"}";
         //String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";

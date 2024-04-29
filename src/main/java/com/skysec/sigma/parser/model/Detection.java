@@ -11,29 +11,21 @@ import java.util.regex.Pattern;
 /**
  * one sigma detection
  */
-// eg1:
-// query|startswith:
-//   - 'aaa.stage.'
-//   - 'post.1'
-// eg2:
-// query|contains: '.stage.123456.'
 @Data
 public class Detection {
 
-    private String name;
-
-    private final List<ModifierType> modifiers = new ArrayList<>();
-
-    private final List<String> detectionValues = new ArrayList<>();
+    private String fieldName;
+    private final List<String> values = new ArrayList<>();
 
     private Boolean isMatchAll = false;
+    private final List<ModifierType> modifiers = new ArrayList<>();
 
     public void addModifier(ModifierType modifier) {
         this.modifiers.add(modifier);
     }
 
     public void addValue(String value) {
-        this.detectionValues.add(value);
+        this.values.add(value);
     }
 
     /**
@@ -43,7 +35,7 @@ public class Detection {
 
         int matchCount = 0;
 
-        for (String detectionValue : detectionValues) {
+        for (String detectionValue : values) {
             // 可能检测值为数组并且 match all
             if (sourceValue.isArray()) {
                 for (JsonNode node : sourceValue) {
@@ -56,7 +48,7 @@ public class Detection {
 
         // 可能存在多个 modifier 并且存在 ALL 这种 modifier 情况下
         if (isMatchAll) {
-            return matchCount == detectionValues.size();
+            return matchCount == values.size();
         } else {
             return matchCount > 0;
         }

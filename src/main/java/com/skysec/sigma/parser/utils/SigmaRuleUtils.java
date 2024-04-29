@@ -113,7 +113,7 @@ public class SigmaRuleUtils {
      */
     private int getValidDetectionCount(Condition condition, JsonNode data, int validDetectionCount, SigmaDetection sigmaDetection) {
         for (Detection detection : sigmaDetection.getDetections()) {
-            String name = detection.getName();
+            String name = detection.getFieldName();
 
             // 判断数据源是否存在对应的字段数据
             if (data.has(name)) {
