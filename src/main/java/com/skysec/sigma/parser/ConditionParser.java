@@ -26,9 +26,7 @@ public class ConditionParser {
 
     // 临时变量
     String eval = "";
-    String operator;
     String not;
-    Condition currentCondition = null;
 
     /**
      * 解析 condition
@@ -43,20 +41,11 @@ public class ConditionParser {
 
         try {
             // 具体 condition 说明参考：https://sigmahq.io/docs/basics/conditions.html
-            /**
-             * 基于链表的方式连接整个 Condition
-             * 比如 condition: a and (b or (c and d) ) or e
-             *
-             * Condition(a,and) -> Condition(b,or) -> Condition(e,null)
-             *                         |
-             *                     Condition(c,and)
-             *                         |
-             *                     Condition(d,null)
-             */
             String condition = sigmaRuleYaml.getDetection().get("condition").toString();
             conditionManager.addCondition(parse(sigmaDetections, condition));
         } catch (Exception e) {
-            throw new ConditionErrorException("解析 condition 错误, 请检查文件是否编写错误...");
+            e.printStackTrace();
+            throw new ConditionErrorException("解析 condition 错误, 请检查文件是否编写正确...");
         }
 
         return conditionManager;
@@ -89,7 +78,12 @@ public class ConditionParser {
                 if (resultCondition == null) {
                     resultCondition = condition;
                 } else {
-                    currentCondition.setNextCondition(condition);
+                    // todo 可能存在两个及以上的 () 暂时写得有问题 但是 condition 大概率不会含有多个内嵌 ()
+                    if (isPeer) {
+                        currentCondition.setPeerCondition(condition);
+                    } else {
+                        currentCondition.setNextCondition(condition);
+                    }
                 }
                 currentCondition = condition;
                 i = r + 1;

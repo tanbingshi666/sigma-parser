@@ -90,7 +90,8 @@ public class DetectionParser {
                 );
             }
         } catch (Exception e) {
-            throw new DetectionErrorException("解析 detection 错误, 请检查文件是否编写错误...");
+            e.printStackTrace();
+            throw new DetectionErrorException("解析 detection 错误, 请检查文件是否编写正确...");
         }
 
         return detectionManager;
