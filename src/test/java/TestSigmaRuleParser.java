@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.skysec.sigma.parser.SigmaRuleParser;
+import com.skysec.sigma.parser.exception.ConditionErrorException;
 import com.skysec.sigma.parser.exception.DetectionErrorException;
 import com.skysec.sigma.parser.model.SigmaRule;
 
@@ -42,11 +43,14 @@ public class TestSigmaRuleParser {
         } catch (DetectionErrorException e1) {
             System.out.println("解析 detection 出错, 请检查是否编写正确...");
             e1.printStackTrace();
-        } catch (JsonProcessingException e2) {
+        } catch (ConditionErrorException e2) {
+            System.out.println("解析 condition 出错, 请检查是否编写正确...");
             e2.printStackTrace();
-            System.out.println("解析规则文件出错, 请检查是否编写正确...");
-        } catch (Exception e3) {
+        } catch (JsonProcessingException e3) {
             e3.printStackTrace();
+            System.out.println("解析规则文件出错, 请检查是否编写正确...");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         System.out.println(sigmaRule);
 

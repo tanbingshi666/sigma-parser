@@ -2,6 +2,9 @@ package com.skysec.sigma.parser.model;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class Condition {
 
@@ -9,13 +12,16 @@ public class Condition {
 
     private String operator;
 
-    private Condition pairCondition;
+    private String peerOperator;
 
-    private String notCondition;
+    private String not;
 
-    public Condition(String name, String notCondition) {
+    private Condition nextCondition;
+
+    private Condition peerCondition;
+
+    public Condition(String name) {
         this.name = name;
-        this.notCondition = notCondition;
     }
 
 }

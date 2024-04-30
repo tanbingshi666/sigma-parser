@@ -2,13 +2,12 @@ package com.skysec.sigma.parser;
 
 import cn.hutool.log.Log;
 import cn.hutool.log.dialect.console.ConsoleLog;
+import com.skysec.sigma.parser.exception.ConditionErrorException;
 import com.skysec.sigma.parser.model.Condition;
 import com.skysec.sigma.parser.model.SigmaDetection;
 import com.skysec.sigma.parser.model.SigmaRuleYaml;
-import com.skysec.sigma.parser.utils.StringUtils;
 
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
+import java.util.Arrays;
 import java.util.Map;
 
 public class ConditionParser {
@@ -26,9 +25,10 @@ public class ConditionParser {
     public static final String IN_ALL = "all of ";
 
     // 临时变量
-    private String temp = "";
-    private String notCondition;
-    private Condition currentCondition;
+    String eval = "";
+    String operator;
+    String not;
+    Condition currentCondition = null;
 
     /**
      * 解析 condition
@@ -37,85 +37,188 @@ public class ConditionParser {
      * @param sigmaRuleYaml   sigma rule yaml 文件解析
      */
     public ConditionManager parseCondition(Map<String, SigmaDetection> sigmaDetections,
-                                           SigmaRuleYaml sigmaRuleYaml) {
+                                           SigmaRuleYaml sigmaRuleYaml) throws Exception {
 
         ConditionManager conditionManager = new ConditionManager();
 
-        String condition = sigmaRuleYaml.getDetection().get("condition").toString();
-        if (!StringUtils.isEmpty(condition)) {
-            CharacterIterator it = new StringCharacterIterator(condition.trim());
-
-            // todo 目前只考虑 AND, OR, 1 of selection*, all of selection*, not, () 情况
+        try {
+            // 具体 condition 说明参考：https://sigmahq.io/docs/basics/conditions.html
             /**
-             * 情况一: condition: selection
-             * 情况二: condition: selection1 and selection2
-             * 情况三: condition: selection1 or selection2
+             * 基于链表的方式连接整个 Condition
+             * 比如 condition: a and (b or (c and d) ) or e
              *
-             * 情况四: 1 of selection*
-             * 情况五: all of selection* and select
-             *
-             * 情况六: condition: not selection
-             * 情况七: condition: other and not 1 of selection*
-             *
-             * 情况八: condition: selection1 and (keywords1 or keywords2)
+             * Condition(a,and) -> Condition(b,or) -> Condition(e,null)
+             *                         |
+             *                     Condition(c,and)
+             *                         |
+             *                     Condition(d,null)
              */
-            while (it.current() != CharacterIterator.DONE) {
-                String currentChar = Character.toString(it.current());
-                if (SPACE.equals(currentChar)) {
-                    // 匹配 detection 或者是操作符 (and, or) 或者否定 (not) 情况下
-                    if (sigmaDetections.containsKey(temp) || AND.equals(temp) || OR.equals(temp) || NOT.equals(temp)) {
-                        evaluateString(conditionManager, temp);
-                        temp = "";
-                    } else {
-                        // 1 of 或者 all of 情况下
-                        if ((temp.startsWith(IN_ONE) && temp.length() > IN_ONE.length()) || (temp.startsWith(IN_ALL) && temp.length() > IN_ALL.length())) {
-                            evaluateString(conditionManager, temp);
-                            temp = "";
-                        } else {
-                            temp = temp.concat(currentChar);
-                        }
-                    }
-                } else if (OPEN.equals(currentChar)) {
-                    // nothing to do
-                } else if (CLOSE.equals(currentChar)) {
-                    // nothing to do
-                } else {
-                    temp = temp.concat(currentChar);
-                }
-
-                it.next();
-            }
-
-            // the last part of condition
-            if (!StringUtils.isEmpty(temp)) {
-                evaluateString(conditionManager, temp);
-            }
+            String condition = sigmaRuleYaml.getDetection().get("condition").toString();
+            conditionManager.addCondition(parse(sigmaDetections, condition));
+        } catch (Exception e) {
+            throw new ConditionErrorException("解析 condition 错误, 请检查文件是否编写错误...");
         }
 
         return conditionManager;
     }
 
-    private void evaluateString(ConditionManager conditionManager, String eval) {
-        switch (eval) {
-            case AND:
-            case OR:
-                currentCondition.setOperator(eval);
-                break;
-            case NOT:
-                notCondition = NOT;
-                break;
-            default:
-                if (currentCondition == null) {
-                    currentCondition = new Condition(eval, notCondition);
-                    conditionManager.addCondition(currentCondition);
-                } else {
-                    Condition newCondition = new Condition(eval, notCondition);
-                    currentCondition.setPairCondition(newCondition);
-                    currentCondition = newCondition;
-                }
-                notCondition = null;
-                break;
+    private Condition parse(Map<String, SigmaDetection> sigmaDetections,
+                            String expression) throws Exception {
+        // 检查表达式是否存在 () 并匹配
+        int[] match = new int[expression.length()];
+        if (!checkBracketAndMarking(expression, match)) {
+            throw new ConditionErrorException("解析 condition 表达式中的括号不匹配...");
         }
 
+        return calculate(sigmaDetections, expression.trim(), 0, expression.length(), match, false);
     }
+
+    private Condition calculate(Map<String, SigmaDetection> sigmaDetections,
+                                String expression,
+                                int begin, int end,
+                                int[] match, boolean isPeer) {
+        Condition resultCondition = null;
+        Condition currentCondition = null;
+        Condition peerCondition = null;
+        for (int i = begin; i < end; i++) {
+            // 表示遇到 () 表达式 需要提取对应的表达式进行递归
+            if (expression.charAt(i) == '(') {
+                int r = match[i];
+                Condition condition = calculate(sigmaDetections, expression.trim(), i + 1, r, match, true);
+                setNot(condition);
+                if (resultCondition == null) {
+                    resultCondition = condition;
+                } else {
+                    currentCondition.setNextCondition(condition);
+                }
+                currentCondition = condition;
+                i = r + 1;
+            } else if (SPACE.equals(String.valueOf(expression.charAt(i)))) {
+                // 匹配对应的 detection 中 fieldName
+                if (sigmaDetections.containsKey(eval)) {
+                    Condition condition = new Condition(eval);
+                    setNot(condition);
+                    if (resultCondition == null) {
+                        resultCondition = condition;
+                    } else if (currentCondition != null) {
+                        if (isPeer) {
+                            if (peerCondition != null) {
+                                peerCondition.setPeerCondition(condition);
+                            } else {
+                                currentCondition.setPeerCondition(condition);
+                            }
+                            peerCondition = condition;
+                        } else {
+                            currentCondition.setNextCondition(condition);
+                        }
+                    }
+                    currentCondition = condition;
+                    eval = "";
+                } else if (AND.equals(eval) || OR.equals(eval)) {
+                    if (isPeer) {
+                        setPeerOperator(currentCondition, eval);
+                    } else {
+                        setOperator(currentCondition, eval);
+                    }
+                    eval = "";
+                } else if (NOT.equals(eval)) {
+                    not = eval;
+                    eval = "";
+                } else {
+                    // 1 of 或者 all of 情况下 需要拼接空格
+                    eval = eval.concat(String.valueOf(expression.charAt(i)));
+                    if ((eval.startsWith(IN_ONE) && eval.length() > IN_ONE.length())
+                            || (eval.startsWith(IN_ALL) && eval.length() > IN_ALL.length())) {
+                        Condition condition = new Condition(eval);
+                        setNot(condition);
+                        if (resultCondition == null) {
+                            resultCondition = condition;
+                        } else if (currentCondition != null) {
+                            if (isPeer) {
+                                if (peerCondition != null) {
+                                    peerCondition.setPeerCondition(condition);
+                                } else {
+                                    currentCondition.setPeerCondition(condition);
+                                }
+                                peerCondition = condition;
+                            } else {
+                                currentCondition.setNextCondition(condition);
+                            }
+                        }
+                        currentCondition = condition;
+                        eval = "";
+                    }
+                }
+            } else {
+                eval = eval.concat(String.valueOf(expression.charAt(i)));
+            }
+        }
+
+        // the last condition
+        if (eval.length() > 0) {
+            Condition condition = new Condition(eval);
+            setNot(condition);
+            if (resultCondition == null) {
+                resultCondition = condition;
+            } else if (currentCondition != null) {
+                if (isPeer) {
+                    if (peerCondition != null) {
+                        peerCondition.setPeerCondition(condition);
+                    } else {
+                        currentCondition.setPeerCondition(condition);
+                    }
+                } else {
+                    currentCondition.setNextCondition(condition);
+                }
+            }
+            eval = "";
+        }
+
+        return resultCondition;
+    }
+
+    private void setOperator(Condition condition, String eval) {
+        if (AND.equals(eval) || OR.equals(eval)) {
+            condition.setOperator(eval);
+        }
+    }
+
+    private void setPeerOperator(Condition condition, String eval) {
+        if (AND.equals(eval) || OR.equals(eval)) {
+            condition.setPeerOperator(eval);
+        }
+    }
+
+    private void setNot(Condition condition) {
+        if (not != null) {
+            condition.setNot(not);
+            not = null;
+        }
+    }
+
+    /**
+     * eg:
+     * expression = 1*(a-b+(c*d))-0
+     * match -> [0, 0, 12, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0]
+     */
+    private boolean checkBracketAndMarking(String expression, int[] match) {
+        Arrays.fill(match, 0);
+
+        int[] stack = new int[match.length];
+        int top = -1;
+        for (int i = 0; i < expression.length(); i++) {
+            switch (expression.charAt(i)) {
+                case '(':
+                    stack[++top] = i;
+                    break;
+                case ')':
+                    if (top < 0) return false;
+                    match[stack[top]] = i;
+                    --top;
+                    break;
+            }
+        }
+        return top < 0;
+    }
+
 }

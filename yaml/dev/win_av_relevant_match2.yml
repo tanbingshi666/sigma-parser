@@ -37,7 +37,13 @@ detection:
       - 1
       - 2
       - 3
-  condition: keywords and not 1 of filter_optional_*
+  other:
+    name: 'other'
+  dns:
+    dns: 'baidu.com'
+  http:
+    http: 'http.com'
+  condition: keywords and (not 1 of filter_optional_* or other and http) and dns
 falsepositives:
   - Some software piracy tools (key generators, cracks) are classified as hack tools
 level: high
