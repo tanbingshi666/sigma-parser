@@ -1,8 +1,8 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skysec.sigma.parser.ConditionManager;
 import com.skysec.sigma.parser.SigmaRuleParser;
 import com.skysec.sigma.parser.model.SigmaRule;
-import com.skysec.sigma.parser.utils.SigmaRuleUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,24 +30,27 @@ public class TestSigmaRuleCheck {
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_13.yml";
 
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_14.yml";
-        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_15.yml";
+        // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\check\\net_dns_external_service_interaction_domains_15.yml";
+        // String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan11\",\"other\": \"DNS\"}";
+        // String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
 
-        SigmaRule sigmaRule = null;
+        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\dev\\win_av_relevant_match.yml";
+
+        String message = "{\"keywords\": \"Adfind\",\"Level\":5,\"Name\":\"sigma\",\"Sex\":\"man\",\"Age\":18}";
+        // String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode valueJson = mapper.readTree(message);
+
         try {
-            sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
+            SigmaRule sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));
+            ConditionManager conditionManager = sigmaRule.getConditionManager();
+            if (conditionManager != null) {
+                boolean parse = conditionManager.parse(sigmaRule.getDetectionManager().getSigmaDetections(), valueJson);
+                System.out.println(parse);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan11\",\"other\": \"DNS\"}";
-        //String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
-
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(message);
-
-        SigmaRuleUtils sigmaRuleCheck = new SigmaRuleUtils();
-        Boolean valid = sigmaRuleCheck.isValid(sigmaRule, jsonNode);
-        System.out.println(valid);
-
     }
 }

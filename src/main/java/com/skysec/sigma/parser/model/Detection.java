@@ -35,8 +35,8 @@ public class Detection {
 
         int matchCount = 0;
 
+        // 对应的 detection 条件可能有多个值并且与修饰符相关联 故需要计算匹配个数
         for (String detectionValue : values) {
-            // 可能检测值为数组并且 match all
             if (sourceValue.isArray()) {
                 for (JsonNode node : sourceValue) {
                     matchCount = checkValue(matchCount, detectionValue, node.asText());
