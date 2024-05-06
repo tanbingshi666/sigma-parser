@@ -54,7 +54,7 @@ public class ConditionManager {
         String eval = "";
         String not = null;
 
-        boolean result = true;
+        boolean result = false;
         for (int i = begin; i < end; i++) {
             boolean isMatch;
             // 表示遇到 () 表达式 需要提取对应的表达式进行递归

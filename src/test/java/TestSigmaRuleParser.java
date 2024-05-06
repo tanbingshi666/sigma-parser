@@ -35,7 +35,7 @@ public class TestSigmaRuleParser {
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\net_dns_external_service_interaction_domains_11.yml";
 
         // String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\dev\\win_av_relevant_match.yml";
-        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\dev\\win_av_relevant_match2.yml";
+        String filename = "D:\\project\\tianax\\sigma-parser\\rules\\windows\\process_creation\\proc_creation_win_rundll32_uncommon_dll_extension.yml";
 
         SigmaRule sigmaRule = null;
         try {

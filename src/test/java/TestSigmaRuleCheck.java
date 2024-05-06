@@ -1,3 +1,4 @@
+import cn.hutool.json.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skysec.sigma.parser.ConditionManager;
@@ -34,13 +35,18 @@ public class TestSigmaRuleCheck {
         // String message = "{\"query\": \"22.interact.sh\",\"select\": \"tan11\",\"other\": \"DNS\"}";
         // String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
 
-        String filename = "D:\\project\\tianax\\sigma-parser\\yaml\\dev\\win_av_relevant_match.yml";
+        String filename = "D:\\project\\tianax\\sigma-parser\\rules\\network\\zeek\\zeek_rdp_public_listener.yml";
 
-        String message = "{\"keywords\": \"Adfind\",\"Level\":5,\"Name\":\"sigma\",\"Sex\":\"man\",\"Age\":18}";
+        JSONObject json = new JSONObject();
+        json.set("keywords", "Adfind");
+        json.set("Level", 4);
+        json.set("Name", "sigma");
+        json.set("Image", "aaa\\AppData\\Local\\Keybase\\upd.exe");
+        // String message = "{\"keywords\": \"Adfind\",\"Level\":5,\"Name\":\"sigma\",\"Sex\":\"man\",\"Age\":18}";
         // String message = "{\"query\": [\".interact.sh\",\"aaa\"],\"select\": \"tan\"}";
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode valueJson = mapper.readTree(message);
+        JsonNode valueJson = mapper.readTree(json.toJSONString(0));
 
         try {
             SigmaRule sigmaRule = ruleParser.parseRule(Files.readString(Path.of(filename)));

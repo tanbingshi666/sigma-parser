@@ -147,7 +147,9 @@ public class DetectionParser {
                 Detection detection = new Detection();
 
                 parseName(detection, entry.getKey());
-                parseValue(detection, entry.getValue().toString());
+                if (entry.getValue() != null) {
+                    parseValue(detection, entry.getValue().toString());
+                }
 
                 sigmaDetection.addDetection(detection);
             }
@@ -288,6 +290,12 @@ public class DetectionParser {
                     break;
                 case '\\':
                     out.append("\\\\");
+                    break;
+                case '{':
+                    out.append("\\{");
+                    break;
+                case '}':
+                    out.append("\\}");
                     break;
                 default:
                     out.append(c);
